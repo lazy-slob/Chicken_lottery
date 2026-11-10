@@ -86,7 +86,7 @@
 
   /* ================= Hillside scene ================= */
   .scene {
-    position: relative; height: 232px; overflow: hidden;
+    position: relative; height: 266px; overflow: hidden;
     background: linear-gradient(var(--sky-top), var(--sky-low) 78%);
   }
   .stars {
@@ -139,9 +139,10 @@
   @keyframes drift { to { transform: translateX(calc(100vw + 300px)); } }
 
   .hills {
-    position: absolute; left: 0; bottom: 46px; width: 100%; height: 124px;
+    position: absolute; left: 0; bottom: 80px; width: 100%; height: 124px;
     filter: var(--land-filter);
   }
+  .meadow { position: absolute; left: 0; right: 0; bottom: 48px; height: 36px; background: #3f7d3a; filter: var(--land-filter); }
   /* Gravel lane, then the brick wall in front */
   .lane {
     position: absolute; left: 0; right: 0; bottom: 20px; height: 30px;
@@ -164,18 +165,31 @@
     color: var(--title);
   }
   .brand .cy { display: block; margin-top: 5px; font-size: 15px; color: var(--title-sub); }
-  .house { position: absolute; left: 4%; bottom: 46px; width: 104px; height: 72px; filter: var(--land-filter); }
-  .coop { position: absolute; left: calc(4% + 110px); bottom: 46px; width: 40px; height: 34px; filter: var(--land-filter); }
+  .house { position: absolute; left: 3%; bottom: 47px; width: 104px; height: 72px; filter: var(--land-filter); }
+  /* Gravel parking spot beside the house */
+  .drive { position: absolute; left: calc(3% + 100px); bottom: 48px; width: 122px; height: 15px; border-radius: 12px 14px 0 0; background: #a39c8d; border: 3px solid #4f8f48; border-bottom: 0; filter: var(--land-filter); }
+  /* Hens and cats wander the field */
+  .critters { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+  .coop { position: absolute; left: 72%; bottom: 64px; width: 36px; height: 31px; z-index: 136; filter: var(--land-filter); }
+  .critter { position: absolute; width: 30px; height: 24px; transform-origin: 50% 100%; filter: var(--land-filter); transition: opacity 0.6s; }
+  .critter svg { position: absolute; left: 50%; bottom: 0; translate: -50% 0; transform-origin: 50% 100%; }
+  .critter.hen svg { width: 24px; height: 22px; }
+  .critter.cat svg.sit { width: 18px; height: 22px; }
+  .critter.cat svg.walk { width: 30px; height: 20px; }
+  .critter.cat.walking svg.sit, .critter.cat:not(.walking) svg.walk { display: none; }
+  .critter.away { opacity: 0; }
+  .critter.hen.walking svg { animation: henbob 0.32s ease-in-out infinite; }
+  .critter.hen.pecking svg { animation: peck 1.1s ease-in-out 2; }
+  .critter.cat.walking svg { animation: catbob 0.42s ease-in-out infinite; }
+  @keyframes henbob { 50% { transform: translateY(-1.5px) rotate(-4deg); } }
+  @keyframes catbob { 50% { transform: translateY(-1px); } }
+  @keyframes peck { 0%, 100% { transform: rotate(0); } 30%, 62% { transform: rotate(30deg); } 46% { transform: rotate(14deg); } }
   .cat { position: absolute; filter: var(--land-filter); }
-  .cat.black { color: #1f2428; }
-  .cat.grey { color: #59636a; }
+  .cat.black, .critter.black { color: #1f2428; }
+  .cat.grey, .critter.grey { color: #59636a; }
   .cat.sit { width: 20px; height: 25px; }
   .cat.walk { width: 34px; height: 22px; }
-  .cat.k1 { left: calc(4% + 121px); bottom: 77px; scale: 0.8; }
-  .cat.k2 { left: 47%; bottom: 20px; z-index: 1; }
-  .cat.k3 { left: 30%; bottom: 23px; }
-  .hen { position: absolute; left: 8%; bottom: 25px; width: 30px; height: 28px; filter: var(--land-filter); }
-  .dolly { position: absolute; right: 3%; bottom: 22px; width: 104px; height: 53px; filter: var(--land-filter); }
+  .dolly { position: absolute; left: calc(3% + 110px); bottom: 38px; width: 104px; height: 53px; filter: var(--land-filter); }
 
   /* ================= Card ================= */
   .wrap { max-width: 520px; margin: 0 auto; padding: 14px 12px 0; }
@@ -366,7 +380,7 @@
     .egg-slot { width: 28px; height: 38px; }
   }
   @media (prefers-reduced-motion: reduce) {
-    .cloud, .egg-slot.drop, .ball.roll, .weather { animation: none !important; }
+    .cloud, .egg-slot.drop, .ball.roll, .weather, .critter svg { animation: none !important; }
     .cloud.c1 { left: 20%; } .cloud.c2 { left: 60%; }
   }
 </style>
@@ -410,13 +424,14 @@
     </symbol>
     <symbol id="hen" viewBox="24 24 70 66">
       <g stroke="#e59a00" stroke-width="3.2" stroke-linecap="round" fill="none"><path d="M43 73v12l-5 3M43 85l5 3"/><path d="M55 73v12l-5 3M55 85l5 3"/></g>
-      <path d="M27 60 C27 46 40 41 53 45 C57 38 60 33 67 31 C76 29 81 37 78 45 C76 51 73 55 72 61 C70 72 60 78 48 78 C36 78 27 71 27 60Z" fill="#c8102e"/>
-      <path d="M30 56 C26 50 26 42 30 36 C34 42 36 48 36 54Z" fill="#8f0b20"/>
-      <path d="M62 31c-2-6 3-9 6-6 2-5 8-4 8 1 4-2 7 3 3 7z" fill="#8f0b20"/>
+      <path d="M27 60 C27 46 40 41 53 45 C57 38 60 33 67 31 C76 29 81 37 78 45 C76 51 73 55 72 61 C70 72 60 78 48 78 C36 78 27 71 27 60Z" fill="var(--hen, #c2622d)"/>
+      <path d="M30 56 C26 50 26 42 30 36 C34 42 36 48 36 54Z" fill="var(--hen, #c2622d)"/>
+      <path d="M30 56 C26 50 26 42 30 36 C34 42 36 48 36 54Z" fill="#000" opacity="0.28"/>
+      <path d="M62 31c-2-6 3-9 6-6 2-5 8-4 8 1 4-2 7 3 3 7z" fill="#d4112f"/>
       <path d="M79 38l12 4-11 5z" fill="#e59a00"/>
-      <circle cx="76" cy="50" r="3.6" fill="#8f0b20"/>
+      <circle cx="76" cy="50" r="3.6" fill="#d4112f"/>
       <circle cx="71" cy="38" r="2.3" fill="#fff"/><circle cx="71.6" cy="38" r="1.1" fill="#27323a"/>
-      <path d="M38 62 C42 54 50 52 58 56 C56 64 48 68 40 66Z" fill="#8f0b20"/>
+      <path d="M38 62 C42 54 50 52 58 56 C56 64 48 68 40 66Z" fill="#000" opacity="0.25"/>
     </symbol>
     <!-- Flag of Wales drawing from flag-icons 7.6.0 (MIT licence, (c) 2013 Panayiotis Lipiridis) -->
     <symbol id="wales" viewBox="0 0 640 480">
@@ -496,14 +511,14 @@
     </defs>
     <use href="#landtile"/><use href="#landtile" x="400"/><use href="#landtile" x="800"/>
   </svg>
+  <div class="meadow"></div>
   <div class="lane"></div>
   <div class="scene-inner">
+    <div class="critters" id="critters" aria-hidden="true">
+      <svg class="coop"><use href="#coop"/></svg>
+    </div>
     <svg class="house" aria-hidden="true"><use href="#house"/></svg>
-    <svg class="coop" aria-hidden="true"><use href="#coop"/></svg>
-    <svg class="cat sit grey k1" aria-hidden="true"><use href="#cat-sit"/></svg>
-    <svg class="hen" aria-hidden="true"><use href="#hen"/></svg>
-    <svg class="cat walk grey k3" aria-hidden="true"><use href="#cat-walk"/></svg>
-    <svg class="cat sit black k2" aria-hidden="true"><use href="#cat-sit"/></svg>
+    <div class="drive"></div>
     <svg class="dolly" role="img" aria-label="Green and white Dolly car"><use href="#dolly"/></svg>
     <div class="brand">
       <svg class="brand-mark" viewBox="0 0 640 480" role="img" aria-label="Flag of Wales"><use href="#wales"/></svg>
@@ -621,7 +636,7 @@
     </details>
 
     <div class="bottom-bar">
-      <span>Chicken Lottery v2.3</span>
+      <span>Chicken Lottery v2.4</span>
       <button class="quiet-btn" onclick="resetAll()">Start a new draw</button>
     </div>
 
@@ -1292,6 +1307,90 @@ function renderHistory() {
     list.appendChild(row);
   });
 }
+
+// ============================================================
+// Hens and cats in the field: mostly still, now and then a wander.
+// At night the hens go into the hen house and the cats stay out.
+// ============================================================
+(function critters() {
+  const box = $('critters');
+  if (!box) return;
+  const ZONE = { x0: 50, x1: 95, y0: 54, y1: 98 };   // x in % of the scene, y in px above the bottom
+  const COOP = { x: 72, y: 62 };                      // the hen house door
+  const rand = (a, b) => a + Math.random() * (b - a);
+  const isNight = () => document.documentElement.dataset.time === 'night';
+  const scaleAt = y => 0.95 - ((y - ZONE.y0) / (ZONE.y1 - ZONE.y0)) * 0.35; // further away looks smaller
+
+  function make(kind, cls, style) {
+    const el = document.createElement('div');
+    el.className = `critter ${kind} ${cls || ''}`;
+    if (style) el.style.cssText = style;
+    el.innerHTML = kind === 'hen'
+      ? '<svg><use href="#hen"/></svg>'
+      : '<svg class="sit"><use href="#cat-sit"/></svg><svg class="walk"><use href="#cat-walk"/></svg>';
+    box.appendChild(el);
+    const a = { el, kind, x: rand(ZONE.x0, ZONE.x1), y: rand(ZONE.y0, ZONE.y1), dir: Math.random() < 0.5 ? 1 : -1, away: false };
+    place(a);
+    return a;
+  }
+  function place(a) {
+    const sc = scaleAt(a.y);
+    a.el.style.left = `calc(${a.x}% - 15px)`;
+    a.el.style.bottom = a.y + 'px';
+    a.el.style.zIndex = 200 - Math.round(a.y);
+    a.el.style.transform = `scale(${a.dir * sc}, ${sc})`;
+  }
+  function walkTo(a, tx, ty, then) {
+    const w = box.clientWidth || 384;
+    const dx = (tx - a.x) / 100 * w, dy = ty - a.y;
+    const dur = Math.max(0.4, Math.hypot(dx, dy) / (a.kind === 'hen' ? 9 : 15));
+    if (Math.abs(dx) > 1) a.dir = dx > 0 ? 1 : -1;
+    a.el.style.transition = 'opacity 0.6s';
+    place(a);                       // turn to face the way it is going
+    void a.el.offsetWidth;
+    a.el.style.transition = `left ${dur}s linear, bottom ${dur}s linear, transform ${dur}s linear, opacity 0.6s`;
+    a.el.classList.add('walking');
+    a.x = tx; a.y = ty;
+    place(a);
+    setTimeout(() => { a.el.classList.remove('walking'); then(); }, dur * 1000);
+  }
+  function wander(a) {
+    const reach = a.kind === 'hen' ? 14 : 26;
+    const tx = Math.max(ZONE.x0, Math.min(ZONE.x1, a.x + rand(-reach, reach)));
+    const ty = Math.max(ZONE.y0, Math.min(ZONE.y1, a.y + rand(-16, 16)));
+    walkTo(a, tx, ty, () => rest(a));
+  }
+  function rest(a) {
+    const pause = a.kind === 'hen' ? rand(2500, 9000) : rand(7000, 22000);
+    setTimeout(() => next(a), pause);
+  }
+  function next(a) {
+    if (document.hidden) return setTimeout(() => next(a), 3000);
+    if (a.kind === 'hen') {
+      if (isNight()) {
+        if (a.away) return setTimeout(() => next(a), 30000);
+        return walkTo(a, COOP.x + 2.5, COOP.y, () => { a.away = true; a.el.classList.add('away'); setTimeout(() => next(a), 30000); });
+      }
+      if (a.away) { a.away = false; a.el.classList.remove('away'); return wander(a); }
+      if (Math.random() < 0.45) {
+        a.el.classList.add('pecking');
+        return setTimeout(() => { a.el.classList.remove('pecking'); rest(a); }, 2300);
+      }
+    }
+    wander(a);
+  }
+
+  const HEN_COLOURS = ['#c2622d', '#8a4b2a', '#d9a45b', '#a3391f', '#6f3b22'];
+  const animals = HEN_COLOURS.map(c => make('hen', '', `--hen:${c}`));
+  animals.push(make('cat', 'black'), make('cat', 'grey'), make('cat', 'black'));
+
+  const startInCoop = isNight();
+  animals.forEach(a => {
+    if (a.kind === 'hen' && startInCoop) { a.x = COOP.x + 2.5; a.y = COOP.y; a.away = true; a.el.classList.add('away'); place(a); }
+  });
+  if (reducedMotion) return;        // stay put for anyone who has asked for less motion
+  animals.forEach(a => setTimeout(() => next(a), rand(800, 7000)));
+})();
 
 // Daffodils along the bottom of the field
 (function plantDaffodils() {
