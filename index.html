@@ -165,23 +165,23 @@
     color: var(--title);
   }
   .brand .cy { display: block; margin-top: 5px; font-size: 15px; color: var(--title-sub); }
-  .house { position: absolute; left: 3%; bottom: 47px; width: 104px; height: 72px; filter: var(--land-filter); }
+  .house { position: absolute; left: 3%; bottom: 47px; width: 140px; height: 97px; filter: var(--land-filter); }
   /* Gravel parking spot beside the house */
-  .drive { position: absolute; left: calc(3% + 100px); bottom: 48px; width: 122px; height: 15px; border-radius: 12px 14px 0 0; background: #a39c8d; border: 3px solid #4f8f48; border-bottom: 0; filter: var(--land-filter); }
+  .drive { position: absolute; left: calc(3% + 136px); bottom: 48px; width: 70px; height: 10px; border-radius: 4px 12px 0 0; background: #a39c8d; border: 3px solid #4f8f48; border-bottom: 0; filter: var(--land-filter); }
   /* Hens and cats wander the field */
   .critters { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
-  .coop { position: absolute; left: 72%; bottom: 64px; width: 36px; height: 31px; z-index: 136; filter: var(--land-filter); }
+  .coop { position: absolute; left: 78%; bottom: 64px; width: 24px; height: 20px; z-index: 136; filter: var(--land-filter); }
   .critter { position: absolute; width: 30px; height: 24px; transform-origin: 50% 100%; filter: var(--land-filter); transition: opacity 0.6s; }
   .critter svg { position: absolute; left: 50%; bottom: 0; translate: -50% 0; transform-origin: 50% 100%; }
-  .critter.hen svg { width: 24px; height: 22px; }
-  .critter.cat svg.sit { width: 18px; height: 22px; }
-  .critter.cat svg.walk { width: 30px; height: 20px; }
+  .critter.hen svg { width: 13px; height: 12px; }
+  .critter.cat svg.sit { width: 10px; height: 12px; }
+  .critter.cat svg.walk { width: 17px; height: 11px; }
   .critter.cat.walking svg.sit, .critter.cat:not(.walking) svg.walk { display: none; }
   .critter.away { opacity: 0; }
   .critter.hen.walking svg { animation: henbob 0.32s ease-in-out infinite; }
   .critter.hen.pecking svg { animation: peck 1.1s ease-in-out 2; }
   .critter.cat.walking svg { animation: catbob 0.42s ease-in-out infinite; }
-  @keyframes henbob { 50% { transform: translateY(-1.5px) rotate(-4deg); } }
+  @keyframes henbob { 50% { transform: translateY(-1px) rotate(-4deg); } }
   @keyframes catbob { 50% { transform: translateY(-1px); } }
   @keyframes peck { 0%, 100% { transform: rotate(0); } 30%, 62% { transform: rotate(30deg); } 46% { transform: rotate(14deg); } }
   .cat { position: absolute; filter: var(--land-filter); }
@@ -189,7 +189,7 @@
   .cat.grey, .critter.grey { color: #59636a; }
   .cat.sit { width: 20px; height: 25px; }
   .cat.walk { width: 34px; height: 22px; }
-  .dolly { position: absolute; left: calc(3% + 110px); bottom: 38px; width: 104px; height: 53px; filter: var(--land-filter); }
+  .dolly { position: absolute; left: calc(3% + 146px); bottom: 46px; width: 54px; height: 27px; filter: var(--land-filter); }
 
   /* ================= Card ================= */
   .wrap { max-width: 520px; margin: 0 auto; padding: 14px 12px 0; }
@@ -636,7 +636,7 @@
     </details>
 
     <div class="bottom-bar">
-      <span>Chicken Lottery v2.4</span>
+      <span>Chicken Lottery v2.5</span>
       <button class="quiet-btn" onclick="resetAll()">Start a new draw</button>
     </div>
 
@@ -1315,11 +1315,11 @@ function renderHistory() {
 (function critters() {
   const box = $('critters');
   if (!box) return;
-  const ZONE = { x0: 50, x1: 95, y0: 54, y1: 98 };   // x in % of the scene, y in px above the bottom
-  const COOP = { x: 72, y: 62 };                      // the hen house door
+  const ZONE = { x0: 58, x1: 96, y0: 54, y1: 98 };   // x in % of the scene, y in px above the bottom
+  const COOP = { x: 78.5, y: 62 };                      // the hen house door
   const rand = (a, b) => a + Math.random() * (b - a);
   const isNight = () => document.documentElement.dataset.time === 'night';
-  const scaleAt = y => 0.95 - ((y - ZONE.y0) / (ZONE.y1 - ZONE.y0)) * 0.35; // further away looks smaller
+  const scaleAt = y => 1 - ((y - ZONE.y0) / (ZONE.y1 - ZONE.y0)) * 0.3; // further away looks smaller
 
   function make(kind, cls, style) {
     const el = document.createElement('div');
@@ -1343,7 +1343,7 @@ function renderHistory() {
   function walkTo(a, tx, ty, then) {
     const w = box.clientWidth || 384;
     const dx = (tx - a.x) / 100 * w, dy = ty - a.y;
-    const dur = Math.max(0.4, Math.hypot(dx, dy) / (a.kind === 'hen' ? 9 : 15));
+    const dur = Math.max(0.4, Math.hypot(dx, dy) / (a.kind === 'hen' ? 6 : 10));
     if (Math.abs(dx) > 1) a.dir = dx > 0 ? 1 : -1;
     a.el.style.transition = 'opacity 0.6s';
     place(a);                       // turn to face the way it is going
@@ -1355,7 +1355,7 @@ function renderHistory() {
     setTimeout(() => { a.el.classList.remove('walking'); then(); }, dur * 1000);
   }
   function wander(a) {
-    const reach = a.kind === 'hen' ? 14 : 26;
+    const reach = a.kind === 'hen' ? 10 : 20;
     const tx = Math.max(ZONE.x0, Math.min(ZONE.x1, a.x + rand(-reach, reach)));
     const ty = Math.max(ZONE.y0, Math.min(ZONE.y1, a.y + rand(-16, 16)));
     walkTo(a, tx, ty, () => rest(a));
