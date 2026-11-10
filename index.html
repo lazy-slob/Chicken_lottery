@@ -86,7 +86,7 @@
 
   /* ================= Hillside scene ================= */
   .scene {
-    position: relative; height: 266px; overflow: hidden;
+    position: relative; height: 292px; overflow: hidden;
     background: linear-gradient(var(--sky-top), var(--sky-low) 78%);
   }
   .stars {
@@ -139,7 +139,7 @@
   @keyframes drift { to { transform: translateX(calc(100vw + 300px)); } }
 
   .hills {
-    position: absolute; left: 0; bottom: 80px; width: 100%; height: 124px;
+    position: absolute; left: 0; bottom: 80px; width: 100%; height: 150px;
     filter: var(--land-filter);
   }
   .meadow { position: absolute; left: 0; right: 0; bottom: 48px; height: 36px; background: #3f7d3a; filter: var(--land-filter); }
@@ -165,17 +165,17 @@
     color: var(--title);
   }
   .brand .cy { display: block; margin-top: 5px; font-size: 15px; color: var(--title-sub); }
-  .house { position: absolute; left: 3%; bottom: 47px; width: 140px; height: 97px; filter: var(--land-filter); }
+  .house { position: absolute; left: 3%; bottom: 47px; width: 170px; height: 118px; filter: var(--land-filter); }
   /* Gravel parking spot beside the house */
-  .drive { position: absolute; left: calc(3% + 136px); bottom: 48px; width: 70px; height: 10px; border-radius: 4px 12px 0 0; background: #a39c8d; border: 3px solid #4f8f48; border-bottom: 0; filter: var(--land-filter); }
+  .drive { position: absolute; left: calc(3% + 165px); bottom: 48px; width: 88px; height: 12px; border-radius: 4px 12px 0 0; background: #a39c8d; border: 3px solid #4f8f48; border-bottom: 0; filter: var(--land-filter); }
   /* Hens and cats wander the field */
   .critters { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
-  .coop { position: absolute; left: 78%; bottom: 64px; width: 24px; height: 20px; z-index: 136; filter: var(--land-filter); }
+  .coop { position: absolute; left: calc(3% + 262px); bottom: 62px; width: 38px; height: 32px; z-index: 138; filter: var(--land-filter); }
   .critter { position: absolute; width: 30px; height: 24px; transform-origin: 50% 100%; filter: var(--land-filter); transition: opacity 0.6s; }
   .critter svg { position: absolute; left: 50%; bottom: 0; translate: -50% 0; transform-origin: 50% 100%; }
-  .critter.hen svg { width: 13px; height: 12px; }
-  .critter.cat svg.sit { width: 10px; height: 12px; }
-  .critter.cat svg.walk { width: 17px; height: 11px; }
+  .critter.hen svg { width: 18px; height: 17px; }
+  .critter.cat svg.sit { width: 14px; height: 17px; }
+  .critter.cat svg.walk { width: 24px; height: 16px; }
   .critter.cat.walking svg.sit, .critter.cat:not(.walking) svg.walk { display: none; }
   .critter.away { opacity: 0; }
   .critter.hen.walking svg { animation: henbob 0.32s ease-in-out infinite; }
@@ -189,7 +189,7 @@
   .cat.grey, .critter.grey { color: #59636a; }
   .cat.sit { width: 20px; height: 25px; }
   .cat.walk { width: 34px; height: 22px; }
-  .dolly { position: absolute; left: calc(3% + 146px); bottom: 46px; width: 54px; height: 27px; filter: var(--land-filter); }
+  .dolly { position: absolute; left: calc(3% + 175px); bottom: 45px; width: 70px; height: 36px; filter: var(--land-filter); }
 
   /* ================= Card ================= */
   .wrap { max-width: 520px; margin: 0 auto; padding: 14px 12px 0; }
@@ -636,7 +636,7 @@
     </details>
 
     <div class="bottom-bar">
-      <span>Chicken Lottery v2.5</span>
+      <span>Chicken Lottery v2.6</span>
       <button class="quiet-btn" onclick="resetAll()">Start a new draw</button>
     </div>
 
@@ -1315,8 +1315,16 @@ function renderHistory() {
 (function critters() {
   const box = $('critters');
   if (!box) return;
-  const ZONE = { x0: 58, x1: 96, y0: 54, y1: 98 };   // x in % of the scene, y in px above the bottom
-  const COOP = { x: 78.5, y: 62 };                      // the hen house door
+  const ZONE = { x0: 66, x1: 96, y0: 54, y1: 104 };   // x in % of the scene, y in px above the bottom
+  const COOP = { x: 78, y: 60 };                        // the hen house door
+  // The hen house sits a fixed distance from the house, so work out where that is on this screen.
+  function measure() {
+    const w = box.clientWidth || 384;
+    COOP.x = (0.03 * w + 262 + 19) / w * 100;
+    ZONE.x0 = Math.min(70, (0.03 * w + 256) / w * 100);
+  }
+  measure();
+  window.addEventListener('resize', measure);
   const rand = (a, b) => a + Math.random() * (b - a);
   const isNight = () => document.documentElement.dataset.time === 'night';
   const scaleAt = y => 1 - ((y - ZONE.y0) / (ZONE.y1 - ZONE.y0)) * 0.3; // further away looks smaller
@@ -1343,7 +1351,7 @@ function renderHistory() {
   function walkTo(a, tx, ty, then) {
     const w = box.clientWidth || 384;
     const dx = (tx - a.x) / 100 * w, dy = ty - a.y;
-    const dur = Math.max(0.4, Math.hypot(dx, dy) / (a.kind === 'hen' ? 6 : 10));
+    const dur = Math.max(0.4, Math.hypot(dx, dy) / (a.kind === 'hen' ? 8 : 13));
     if (Math.abs(dx) > 1) a.dir = dx > 0 ? 1 : -1;
     a.el.style.transition = 'opacity 0.6s';
     place(a);                       // turn to face the way it is going
@@ -1369,7 +1377,7 @@ function renderHistory() {
     if (a.kind === 'hen') {
       if (isNight()) {
         if (a.away) return setTimeout(() => next(a), 30000);
-        return walkTo(a, COOP.x + 2.5, COOP.y, () => { a.away = true; a.el.classList.add('away'); setTimeout(() => next(a), 30000); });
+        return walkTo(a, COOP.x, COOP.y, () => { a.away = true; a.el.classList.add('away'); setTimeout(() => next(a), 30000); });
       }
       if (a.away) { a.away = false; a.el.classList.remove('away'); return wander(a); }
       if (Math.random() < 0.45) {
@@ -1386,7 +1394,7 @@ function renderHistory() {
 
   const startInCoop = isNight();
   animals.forEach(a => {
-    if (a.kind === 'hen' && startInCoop) { a.x = COOP.x + 2.5; a.y = COOP.y; a.away = true; a.el.classList.add('away'); place(a); }
+    if (a.kind === 'hen' && startInCoop) { a.x = COOP.x; a.y = COOP.y; a.away = true; a.el.classList.add('away'); place(a); }
   });
   if (reducedMotion) return;        // stay put for anyone who has asked for less motion
   animals.forEach(a => setTimeout(() => next(a), rand(800, 7000)));
