@@ -173,6 +173,8 @@
   .easter-egg { position: absolute; width: 8px; height: 10px; border: 1px solid #27323a; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; filter: var(--land-filter); }
   /* Things that fly or drift across: bats, ghosts, Santa */
   .frontfx { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 2; }
+  /* Top layer: anything flying past goes in front of the flag and the title */
+  .topfx { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 4; }
   .flyer { position: absolute; left: 0; pointer-events: none; }
   .flyer-bob { width: 100%; height: 100%; animation: bob 2.2s ease-in-out infinite alternate; }
   .flyer-in, .flyer-in svg { display: block; width: 100%; height: 100%; overflow: visible; }
@@ -602,6 +604,7 @@
   <div class="weather"></div>
   <div class="flakes"></div>
   <div class="frontfx" id="frontfx" aria-hidden="true"></div>
+  <div class="topfx" id="topfx" aria-hidden="true"></div>
 </header>
 
 <main class="wrap">
@@ -707,7 +710,7 @@
     </details>
 
     <div class="bottom-bar">
-      <span id="versionTap">Chicken Lottery v2.10<span id="versionNote"></span></span>
+      <span id="versionTap">Chicken Lottery v2.11<span id="versionNote"></span></span>
       <button class="quiet-btn" onclick="resetAll()">Start a new draw</button>
     </div>
 
@@ -1687,11 +1690,11 @@ const BUILD = {
     ['mist', 'mist m2'].forEach(c => { const m = document.createElement('div'); m.className = c + ' festive-item'; front.appendChild(m); });
     const bat = () => {
       const w = 18 + Math.random() * 16;
-      flyAcross(S, BAT_SVG, { cls: 'bat', w, h: w / 2, top: 14 + Math.random() * 84, dur: 6 + Math.random() * 6, dir: eitherWay(), arc: 10 });
+      flyAcross($('topfx'), BAT_SVG, { cls: 'bat', w, h: w / 2, top: 14 + Math.random() * 84, dur: 6 + Math.random() * 6, dir: eitherWay(), arc: 10 });
     };
     const batLoop = () => { bat(); if (Math.random() < 0.3) later(bat, 500); later(batLoop, 1500 + Math.random() * 5000); };
     const ghostLoop = () => {
-      flyAcross(front, GHOST_SVG, { cls: 'ghost', w: 24, h: 30, top: 112 + Math.random() * 96, dur: 15 + Math.random() * 10, dir: eitherWay(), arc: 8 });
+      flyAcross($('topfx'), GHOST_SVG, { cls: 'ghost', w: 24, h: 30, top: 112 + Math.random() * 96, dur: 15 + Math.random() * 10, dir: eitherWay(), arc: 8 });
       later(ghostLoop, 8000 + Math.random() * 13000);
     };
     later(batLoop, 400);
@@ -1761,7 +1764,7 @@ const BUILD = {
         .map(([x, y, c]) => `<circle class="tw" cx="${x}" cy="${y}" r="1.500" fill="${c}" stroke="#27323a" stroke-width=".4"/>`).join(''));
     let dir = eitherWay();
     const santaLoop = () => {
-      flyAcross($('skyfx'), SANTA_SVG, { cls: 'santa', w: 108, h: 30, top: 50 + Math.random() * 34, dur: 12 + Math.random() * 5, dir, arc: 10 });
+      flyAcross($('topfx'), SANTA_SVG, { cls: 'santa', w: 108, h: 30, top: 50 + Math.random() * 34, dur: 12 + Math.random() * 5, dir, arc: 10 });
       dir = -dir;
       later(santaLoop, 24000 + Math.random() * 22000);
     };
@@ -1794,6 +1797,7 @@ function applyTheme(force) {
   document.querySelectorAll('.festive-item').forEach(e => e.remove());
   $('skyfx').innerHTML = '';
   $('frontfx').innerHTML = '';
+  $('topfx').innerHTML = '';
   clearInterval(fxTimer); fxTimer = null;
   flyTimers.forEach(clearTimeout); flyTimers = [];
   if (BUILD[name]) BUILD[name]();
