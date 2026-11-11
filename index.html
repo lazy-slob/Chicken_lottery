@@ -215,6 +215,16 @@
   :root[data-theme="halloween"][data-time="night"] { --sky-top: #160c2b; --sky-low: #4b2a63; --sun: #ffb347; --sun-glow: rgba(255, 150, 60, 0.4); }
   :root:is([data-theme="bonfire"], [data-theme="newyear"]):is([data-time="dusk"], [data-time="night"]) .brand h1 { text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5); }
 
+  /* Christmas Eve only: a deeper road for the scene, with the house and field moved up to make room */
+  .evefx { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
+  :root[data-scene="eve"] .scene { height: 302px; }
+  :root[data-scene="eve"] .lane { height: 60px; }
+  :root[data-scene="eve"] :is(.hills, .meadow, .house, .drive, .critters, #festive) { translate: 0 -30px; }
+  :root[data-scene="eve"] .dolly { display: none; }   /* the Dolly is drawn in the scene instead, out on the road */
+  .deco .nod { transform-box: fill-box; transform-origin: 50% 90%; animation: nod 1.8s ease-in-out infinite alternate; }
+  @keyframes nod { from { transform: rotate(-8deg); } to { transform: rotate(8deg); } }
+  .deco .speech { font-family: var(--body); font-size: 11px; font-weight: 700; fill: #27323a; text-anchor: middle; }
+
   /* Hidden test panel (tap the version number five times) */
   #versionTap { user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
   .testpanel { margin-top: 14px; padding: 12px; border: 2px dashed var(--slate-soft); border-radius: 14px; font-size: 15px; }
@@ -593,6 +603,7 @@
     <div class="drive"></div>
     <svg class="dolly" role="img" aria-label="Green and white Dolly car"><use href="#dolly"/></svg>
     <div class="festive" id="festive" aria-hidden="true"></div>
+    <div class="evefx" id="evefx" aria-hidden="true"></div>
     <div class="brand">
       <svg class="brand-mark" viewBox="0 0 640 480" role="img" aria-label="Flag of Wales"><use href="#wales"/></svg>
       <div>
@@ -710,7 +721,7 @@
     </details>
 
     <div class="bottom-bar">
-      <span id="versionTap">Chicken Lottery v2.11<span id="versionNote"></span></span>
+      <span id="versionTap">Chicken Lottery v2.12<span id="versionNote"></span></span>
       <button class="quiet-btn" onclick="resetAll()">Start a new draw</button>
     </div>
 
@@ -1519,6 +1530,7 @@ function renderHistory() {
 //   25-31 October   Halloween          2-8 November   Bonfire Night
 //   11 November     Birthday           Easter week    Monday before Easter to Easter Monday
 //   December        Christmas          1 January      New Year
+//   24 December     Christmas, plus Santa stopped by the police
 // Only the picture at the top changes; the form works the same all year.
 // ============================================================
 const THEMES = {
@@ -1528,6 +1540,7 @@ const THEMES = {
   birthday:  { label: 'Birthday', title: 'Pen-blwydd Hapus!' },
   easter:    { label: 'Easter', sub: 'Pasg Hapus!' },
   christmas: { label: 'Christmas', sub: 'Nadolig Llawen!' },
+  christmaseve: { label: 'Christmas Eve', sub: 'Nadolig Llawen!', css: 'christmas' },
   newyear:   { label: 'New Year', title: 'Blwyddyn Newydd Dda!' }
 };
 
@@ -1542,6 +1555,7 @@ function themeForDate(d) {
   const m = d.getMonth() + 1, day = d.getDate();
   if (m === 11 && day === 11) return 'birthday';
   if (m === 1 && day === 1) return 'newyear';
+  if (m === 12 && day === 24) return 'christmaseve';
   if (m === 12) return 'christmas';
   if (m === 10 && day >= 25) return 'halloween';
   if (m === 11 && day >= 2 && day <= 8) return 'bonfire';
@@ -1611,22 +1625,94 @@ function flyAcross(layer, html, o) {
 const eitherWay = () => (Math.random() < 0.5 ? 1 : -1);
 const BAT_SVG = '<svg viewBox="0 0 24 12"><path fill="currentColor" d="M12 4.500 10.500 1.500 10 4C8 2.500 5.500 2.500 4.500 4.500 3.500 3 1.500 2.800 0 3.500c2 1 3 4 3 6.500C4.500 8 6.500 8 8 10c1-2 3-2 4 0 1-2 3-2 4 0 1.500-2 3.500-2 5 0 0-2.500 1-5.500 3-6.500-1.500-.700-3.500-.500-4.500 1C18.500 2.500 16 2.500 14 4L13.500 1.500Z"/></svg>';
 const GHOST_SVG = '<svg viewBox="0 0 26 32"><path d="M2 30V13C2 6 7 1.500 13 1.500S24 6 24 13V30l-3.700-3.500L16.700 30 13 26.500 9.300 30 5.700 26.500Z" fill="#fff" stroke="#c9cfdb" stroke-width="1" stroke-linejoin="round"/><ellipse cx="9.500" cy="12" rx="1.900" ry="2.600" fill="#27323a"/><ellipse cx="16.500" cy="12" rx="1.900" ry="2.600" fill="#27323a"/><ellipse cx="13" cy="18.500" rx="1.800" ry="2.400" fill="#27323a"/></svg>';
-const SANTA_SVG = (() => {
-  const ink = 'stroke="#27323a" stroke-linejoin="round" stroke-linecap="round"';
-  const deer = (x, red) =>
-    `<g ${ink} stroke-width=".8"><path d="M${x + 4} 19l4 6M${x + 2.5} 19l-1 7M${x - 5} 19l-4 6M${x - 3} 19l1 7" fill="none" stroke="#6b4423" stroke-width="1.500"/>` +
-    `<ellipse cx="${x}" cy="16" rx="8" ry="4.200" fill="#8a5a33"/><path d="M${x + 5} 14.500 ${x + 10} 9.500l3 2-5 5Z" fill="#8a5a33"/><circle cx="${x + 12}" cy="9" r="2.900" fill="#8a5a33"/>` +
-    `<path d="M${x + 11.500} 6.500l-1.500-4.500M${x + 10.800} 4.500l-2-.800M${x + 12.800} 6.500l2-4.500M${x + 13.600} 4.500l2.200-.500" fill="none" stroke="#5a381c" stroke-width=".9"/>` +
-    `<circle cx="${x + 14.700}" cy="9.600" r="1.100" fill="${red ? '#ff2a2a' : '#27323a'}" stroke="none"/><circle cx="${x + 12.300}" cy="8.300" r=".5" fill="#27323a" stroke="none"/></g>`;
-  return '<svg viewBox="0 0 124 34">' +
-    `<path d="M33 15Q48 11 62 14M78 14Q85 11 92 14" fill="none" stroke="#5a381c" stroke-width=".7"/>` +
-    deer(70, false) + deer(100, true) +
-    `<g ${ink} stroke-width=".8"><path d="M6 30.500Q3.500 30.500 3.500 27.500M6 30.500H38Q43.500 30.500 43.500 25M14 30.500v-4M32 30.500v-4" fill="none" stroke="#c9a227" stroke-width="1.500"/>` +
-    `<circle cx="14.500" cy="13.500" r="5.800" fill="#7a4f2a"/>` +
-    `<ellipse cx="27" cy="15.500" rx="5" ry="6" fill="#d4112f"/><circle cx="28.500" cy="7.800" r="3" fill="#f3c9a5"/>` +
-    `<path d="M25.800 8.800Q28.500 14 31.500 8.800Q28.600 10.500 25.800 8.800Z" fill="#fff"/><path d="M25.400 6.300Q28 .500 33.200 3.200L31.500 6.300Z" fill="#d4112f"/><path d="M25 6.400h7" stroke="#fff" stroke-width="1.600"/><circle cx="33.500" cy="3.200" r="1.300" fill="#fff"/>` +
-    `<path d="M8 26.500Q6 16 12 15.500L14 21.500H34Q40 21.500 41 14.500Q45.500 20 42 26.500Z" fill="#c8102e"/><path d="M11 24H40" fill="none" stroke="#f6c21c" stroke-width="1"/></g></svg>`;
-})();
+const reindeer = (x, red) =>
+  `<g ${INK} stroke-width=".8"><path d="M${x + 4} 19l4 6M${x + 2.5} 19l-1 7M${x - 5} 19l-4 6M${x - 3} 19l1 7" fill="none" stroke="#6b4423" stroke-width="1.500"/>` +
+  `<ellipse cx="${x}" cy="16" rx="8" ry="4.200" fill="#8a5a33"/><path d="M${x + 5} 14.500 ${x + 10} 9.500l3 2-5 5Z" fill="#8a5a33"/><circle cx="${x + 12}" cy="9" r="2.900" fill="#8a5a33"/>` +
+  `<path d="M${x + 11.500} 6.500l-1.500-4.500M${x + 10.800} 4.500l-2-.800M${x + 12.800} 6.500l2-4.500M${x + 13.600} 4.500l2.200-.500" fill="none" stroke="#5a381c" stroke-width=".9"/>` +
+  `<circle cx="${x + 14.700}" cy="9.600" r="1.100" fill="${red ? '#ff2a2a' : '#27323a'}" stroke="none"/><circle cx="${x + 12.300}" cy="8.300" r=".5" fill="#27323a" stroke="none"/></g>`;
+// The sleigh with Santa in it, facing right. His head is its own group so it can wobble.
+const SLEIGH = `<g ${INK} stroke-width=".8"><path d="M6 30.500Q3.500 30.500 3.500 27.500M6 30.500H38Q43.500 30.500 43.500 25M14 30.500v-4M32 30.500v-4" fill="none" stroke="#c9a227" stroke-width="1.500"/>` +
+  `<circle cx="14.500" cy="13.500" r="5.800" fill="#7a4f2a"/><ellipse cx="27" cy="15.500" rx="5" ry="6" fill="#d4112f"/>` +
+  `<g class="nod"><circle cx="28.500" cy="7.800" r="3" fill="#f3c9a5"/><path d="M25.800 8.800Q28.500 14 31.500 8.800Q28.600 10.500 25.800 8.800Z" fill="#fff"/><path d="M25.400 6.300Q28 .500 33.200 3.200L31.500 6.300Z" fill="#d4112f"/><path d="M25 6.400h7" stroke="#fff" stroke-width="1.600"/><circle cx="33.500" cy="3.200" r="1.300" fill="#fff"/></g>` +
+  `<path d="M8 26.500Q6 16 12 15.500L14 21.500H34Q40 21.500 41 14.500Q45.500 20 42 26.500Z" fill="#c8102e"/><path d="M11 24H40" fill="none" stroke="#f6c21c" stroke-width="1"/></g>`;
+const SANTA_SVG = '<svg viewBox="0 0 124 34"><path d="M33 15Q48 11 62 14M78 14Q85 11 92 14" fill="none" stroke="#5a381c" stroke-width=".7"/>' +
+  reindeer(70, false) + reindeer(100, true) + SLEIGH + '</svg>';
+
+// ---- Christmas Eve: Santa has crashed the sleigh into the Dolly and the police have turned up ----
+function policeCar(x, y, flip) {
+  const k = 1.2;   // a little longer than the Dolly, about the same height
+  const shell = 'M2 23V15.500Q2 12.500 6 12L14 11.500 20 4Q21 2.500 23 2.500H42Q44 2.500 45.500 4L52 11.500 61 13Q64 13.500 64 16.500V23Z';
+  let blocks = '';
+  for (let i = 0; i < 8; i++) blocks += `<rect x="${(2.6 + i * 7.6).toFixed(1)}" y="15" width="7.600" height="4.400" fill="${i % 2 ? '#f6e24a' : '#1f5fbf'}"/>`;
+  const base = `<g transform="${flip ? `translate(${x + 66 * k},${y}) scale(${-k},${k})` : `translate(${x},${y}) scale(${k})`}">` +
+    `<path d="${shell}" fill="#fff"/><path d="M22.500 5H31V11.500H17.500ZM33.500 5H41.500L47 11.500H33.500Z" fill="#a9d0da" ${INK} stroke-width=".9"/>` + blocks +
+    `<path d="${shell}" fill="none" ${INK} stroke-width="1.100"/><rect x="27" y="-.500" width="11" height="3.200" rx="1" fill="#1f5fbf" ${INK} stroke-width=".9"/>` +
+    '<circle cx="15" cy="23.500" r="5.200" fill="#27323a"/><circle cx="15" cy="23.500" r="2.200" fill="#c9d0d6"/><circle cx="50" cy="23.500" r="5.200" fill="#27323a"/><circle cx="50" cy="23.500" r="2.200" fill="#c9d0d6"/></g>';
+  const lx = x + k * (flip ? 33.5 : 32.5);
+  const glow = `<circle class="tw" cx="${lx}" cy="${y + 1.5}" r="9.500" fill="#4da3ff" fill-opacity=".45"/><rect class="tw" x="${lx - 6}" y="${y - 0.6}" width="12" height="3.600" rx="1.200" fill="#bfe0ff"/>`;
+  return { base, glow };
+}
+function officer(x, y, pose, d) {     // x is the middle of the officer, y is the ground, d is 1 facing right or -1 facing left
+  const limb = (path, col, w) => `<path d="${path}" fill="none" stroke="#27323a" stroke-width="${w + 1.6}" stroke-linecap="round"/><path d="${path}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round"/>`;
+  const arm = pose === 'point'
+    ? limb(`M${x + 5 * d} ${y - 27}L${x + 14 * d} ${y - 32}`, '#e3ee3c', 2.6)
+    : limb(`M${x + 5 * d} ${y - 27}L${x + 10 * d} ${y - 21}`, '#e3ee3c', 2.6) + `<rect x="${x + (d > 0 ? 8.5 : -13.5)}" y="${y - 24.5}" width="5" height="6" rx=".8" fill="#fff" ${INK} stroke-width=".8"/>`;
+  return limb(`M${x - 2.6} ${y - 14}L${x - 3} ${y - 1.5}M${x + 2.6} ${y - 14}L${x + 3} ${y - 1.5}`, '#1c2333', 3.2) +
+    `<path d="M${x - 6} ${y - 30}H${x + 6}L${x + 7} ${y - 13}H${x - 7}Z" fill="#e3ee3c" ${INK} stroke-width="1"/>` +
+    `<path d="M${x - 6.5} ${y - 21}H${x + 6.5}" stroke="#c9d0d6" stroke-width="2.200"/>` + arm +
+    `<circle cx="${x}" cy="${y - 34}" r="4" fill="#f3c9a5" ${INK} stroke-width="1"/>` +
+    `<path d="M${x - 4.6} ${y - 35.5}Q${x - 4.6} ${y - 45} ${x} ${y - 45.5}Q${x + 4.6} ${y - 45} ${x + 4.6} ${y - 35.5}Z" fill="#1c2333" ${INK} stroke-width="1"/>` +
+    `<path d="M${x - 5.6} ${y - 35.5}H${x + 5.6}" stroke="#27323a" stroke-width="1.600" stroke-linecap="round"/>` +
+    `<circle cx="${x}" cy="${y - 40.5}" r="1.100" fill="#d9dee3"/><circle cx="${x + 1.7 * d}" cy="${y - 33.6}" r=".55" fill="#27323a"/>`;
+}
+function speech(x, y, w, h, lines, sx, tx, ty) {   // box, lines of text, then where the tail starts and points
+  return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="9" fill="#fff" ${INK} stroke-width="1.300"/>` +
+    `<path d="M${sx - 4.5} ${y + h - 0.6}L${tx} ${ty}L${sx + 4.5} ${y + h - 0.6}" fill="#fff" ${INK} stroke-width="1.300"/>` +
+    `<path d="M${sx - 3.4} ${y + h - 0.9}H${sx + 3.4}" stroke="#fff" stroke-width="2"/>` +
+    `<text class="speech">` + lines.map((t, i) => `<tspan x="${x + w / 2}" y="${y + 14.5 + i * 13}">${t}</tspan>`).join('') + '</text>';
+}
+// The Dolly after being hit from behind: back end crumpled, bumper hanging off, rear wheel gone, sitting down on its axle.
+const DOLLY_CRASHED = `<g transform="rotate(-6 94 58)" ${INK} stroke-width="1.600">` +
+  '<rect x="109" y="43" width="10" height="4.500" rx="2" fill="#aeb7bb"/>' +
+  '<rect x="0" y="48" width="10" height="4.500" rx="2" fill="#aeb7bb" transform="rotate(52 5 50)"/>' +
+  '<path d="M18 48 12 44 19 40 12 36 20 31Q22 27 27 27H72l34 10c3 1 5 3.500 5 6.500V48Z" fill="#f8f4e7"/>' +
+  '<path d="M21 29 16 24 23 20 19 15Q30 6 46 6h10c4 0 6 1.500 7.500 4.500L72 27Z" fill="#f8f4e7"/>' +
+  '<path d="M21 29 16 24 23 20 19 15Q30 6 46 6h10c4 0 6 1.500 7.500 4.500l1.500 3.500-8-2.500H46C38 11.500 31 14 27.500 20L26 29Z" fill="#22a04b"/>' +
+  '<path d="M50 15h7l8 11H50Z" fill="#a9d0da"/><path d="M35.500 17 46 15v11H30l2.500-4-2-3Z" fill="#a9d0da"/>' +
+  '<path d="M33 25l3.500-3.500 1.500 3 4-6M38 24.500l3 1.500" fill="none" stroke-width=".8"/>' +
+  '<path d="M48 27v20M51 32h5" fill="none"/><path d="M76 30.500l14 4M75 34l11 3" fill="none" stroke-width="1"/>' +
+  '<path d="M17 49 13 45 19 42C21 35 25 31 31 31s16 6 16 18Z" fill="#22a04b"/>' +
+  '<path d="M21 36l5 3.500-4 3.500 5 3M30 35l3 4" fill="none" stroke-width="1.100"/>' +
+  '<path d="M79 48c0-10 6.500-15 15-15 9 0 16 5 17 13v2Z" fill="#22a04b"/>' +
+  '<circle cx="94" cy="49" r="9.500" fill="#27323a"/><circle cx="94" cy="49" r="4.500" fill="#e9e3cf"/><circle cx="100" cy="30" r="4.200" fill="#ffe9a3"/></g>';
+
+// Read left to right: the officer on the left asks, Santa in the middle answers, the officer on the right arrests him.
+function eveScene() {
+  const p1 = policeCar(6, 157, false), p2 = policeCar(302, 158, true);
+  const k = 70 / 122;   // the Dolly is drawn at its usual size
+  const gift = (x, y, w, c) => `<rect x="${x}" y="${y}" width="${w}" height="${w * 0.8}" fill="${c}" ${INK} stroke-width=".9"/><path d="M${x + w / 2} ${y}v${w * 0.8}M${x} ${y + w * 0.4}h${w}" stroke="#f6c21c" stroke-width="1.200"/>`;
+  const base =
+    // the reindeer have come loose and are wandering about nearby, one of them in the Dolly's empty parking spot
+    `<g transform="translate(196,107) scale(1.1)">${reindeer(14, true)}</g>` +
+    `<g transform="translate(384,112) scale(-1.1,1.1)">${reindeer(14, false)}</g>` +
+    // the Dolly, out on the road, hit from behind
+    `<g transform="translate(198,128) scale(${k.toFixed(4)})">${DOLLY_CRASHED}</g>` +
+    // smoke from the crumpled back end, and bits knocked off
+    '<circle class="tw" cx="204" cy="131" r="4.500" fill="#b9c0c4"/><circle class="tw" cx="199" cy="122" r="5.500" fill="#c9cfd3"/><circle class="tw" cx="206" cy="112" r="4" fill="#d9dee1"/><circle class="tw" cx="200" cy="104" r="3" fill="#e4e8ea"/>' +
+    `<path d="M214 170l4 1-2 3ZM224 176l3-2 1 3ZM206 177l3 1-3 2Z" fill="#22a04b" ${INK} stroke-width=".7"/><path d="M219 180l4 .500" stroke="#aeb7bb" stroke-width="2" stroke-linecap="round"/>` +
+    // the rear wheel, rolling off down the road
+    `<path d="M236 176h-7M234 181h-8M237 186h-6" fill="none" ${INK} stroke-width=".9"/><circle cx="246" cy="181" r="5.600" fill="#27323a"/><circle cx="246" cy="181" r="2.600" fill="#e9e3cf"/>` +
+    // the sleigh, come in from the left and ridden up into the back of the Dolly
+    `<g transform="translate(147,123) scale(1.35) rotate(-9 43 30)">${SLEIGH}</g>` +
+    gift(150, 172, 9, '#3b82c4') + gift(168, 178, 7, '#35b85a') + gift(134, 178, 8, '#d4112f') +
+    p1.base + p2.base + officer(110, 187, 'point', 1) + officer(288, 187, 'note', -1);
+  const glow = p1.glow + p2.glow +
+    speech(6, 34, 94, 47, ['How much have', 'you had to', 'drink, sir?'], 88, 108, 140) +
+    speech(136, 28, 98, 47, ['Three whiskies', 'and four', 'shandies.'], 186, 186, 119) +
+    speech(270, 48, 94, 47, ['You&rsquo;re nicked', 'for drink', 'driving!'], 286, 288, 140) +
+    '<text class="tw" x="150" y="128" font-size="8" font-style="italic" font-weight="700" fill="#27323a">hic!</text>';
+  deco($('evefx'), 'left:0;right:0;bottom:0;aspect-ratio:384/200', '0 0 384 200', base, glow);
+}
 
 let fxTimer = null;
 function burst() {
@@ -1744,7 +1830,7 @@ const BUILD = {
     deco(C, 'left:92%;bottom:56px;width:14px;height:17px;z-index:144', '0 0 16 19',
       `<g ${INK} stroke-width=".8" fill="#cdbba6"><path d="M6 8C4.500 4 5 1 6.500 1S8 4 7.500 8ZM9 8C9 4 10 1.500 11.200 2S11.500 5 10.500 8.500Z"/><ellipse cx="9" cy="14" rx="5" ry="4.500"/><circle cx="6.500" cy="9.500" r="3"/><circle cx="13.800" cy="15.500" r="1.800" fill="#fff"/></g><circle cx="5.600" cy="9" r=".6" fill="#27323a"/>`);
   },
-  christmas() {
+  christmas(eve) {
     const F = $('festive'), C = $('critters');
     let lights = '';
     for (let i = 0, x = 9; x <= 97; x += 8, i++) lights += `<circle class="tw" cx="${x}" cy="${i % 2 ? 37.6 : 36.4}" r="1.600" fill="${['#ff4d4d', '#ffd84a', '#5db8ff', '#5fe07f'][i % 4]}" stroke="#27323a" stroke-width=".4"/>`;
@@ -1754,7 +1840,7 @@ const BUILD = {
       '<path d="M5 35.500Q11 38.500 17 36T29 36T41 36T53 36T65 36T77 36T89 36T99 35.500" fill="none" stroke="#27323a" stroke-width=".6"/>' +
       '<circle cx="52" cy="54.500" r="3.400" fill="none" stroke="#27323a" stroke-width="3.400"/><circle cx="52" cy="54.500" r="3.400" fill="none" stroke="#1d6b34" stroke-width="2.200"/><circle cx="52" cy="58" r="1.300" fill="#d4112f" stroke="#27323a" stroke-width=".4"/>',
       WINDOW_GLOW('#ffd97a') + lights);
-    deco(F, CAR_BOX, CAR_VB, `<path d="M27 10Q36 3.500 46 4.500h10q4.500 0 6.500 3.500Q58 10.500 54 8.500Q49 7 45 9Q40 10.500 36 9.500Q31 9 27 10Z" fill="#fff" ${INK} stroke-width="1.600"/>`);
+    if (!eve) deco(F, CAR_BOX, CAR_VB, `<path d="M27 10Q36 3.500 46 4.500h10q4.500 0 6.500 3.500Q58 10.500 54 8.500Q49 7 45 9Q40 10.500 36 9.500Q31 9 27 10Z" fill="#fff" ${INK} stroke-width="1.600"/>`);
     deco(C, COOP_BOX, COOP_VB, `<path d="M20 2 33 10.600Q29 13 25.500 10.800Q22.500 9 19.500 11Q15 13 7 10.600Z" fill="#fff" ${INK} stroke-width="1.200"/>`);
     deco(C, 'left:calc(3% + 312px);bottom:38px;width:34px;height:50px;z-index:162', '0 0 34 50',
       `<g ${INK} stroke-width="1.200"><rect x="15" y="42" width="4" height="7" fill="#7a4f2a"/><path d="M17 22 32 42H2Z" fill="#1d6b34"/><path d="M17 12 29 29H5Z" fill="#23803f"/><path d="M17 4 26 18H8Z" fill="#2a934a"/></g>` +
@@ -1768,7 +1854,11 @@ const BUILD = {
       dir = -dir;
       later(santaLoop, 24000 + Math.random() * 22000);
     };
-    later(santaLoop, 2500);
+    if (!eve) later(santaLoop, 2500);   // on Christmas Eve he is otherwise engaged
+  },
+  christmaseve() {
+    BUILD.christmas(true);
+    eveScene();
   },
   newyear() {
     deco($('festive'), HOUSE_BOX, HOUSE_VB, bunting(GOLD) + balloonBunch(GOLD, 40, 71));
@@ -1788,7 +1878,8 @@ function applyTheme(force) {
   themeName = name;
   setTimeOfDay();
   applyWeather();
-  document.documentElement.dataset.theme = name;
+  document.documentElement.dataset.theme = THEMES[name].css || name;
+  document.documentElement.dataset.scene = name === 'christmaseve' ? 'eve' : '';
   // The title is in Welsh only. A second line appears only for a seasonal greeting, never to repeat the title.
   const sub = THEMES[name].sub || '';
   $('titleMain').textContent = THEMES[name].title || 'Loteri’r Ieir';
