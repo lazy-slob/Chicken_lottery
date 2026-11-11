@@ -594,8 +594,8 @@
     <div class="brand">
       <svg class="brand-mark" viewBox="0 0 640 480" role="img" aria-label="Flag of Wales"><use href="#wales"/></svg>
       <div>
-        <h1 id="titleMain">Chicken Lottery</h1>
-        <span class="cy" lang="cy" id="titleSub">Loteri&rsquo;r Ieir</span>
+        <h1 id="titleMain" lang="cy">Loteri&rsquo;r Ieir</h1>
+        <span class="cy hidden" lang="cy" id="titleSub"></span>
       </div>
     </div>
   </div>
@@ -707,7 +707,7 @@
     </details>
 
     <div class="bottom-bar">
-      <span id="versionTap">Chicken Lottery v2.9<span id="versionNote"></span></span>
+      <span id="versionTap">Chicken Lottery v2.10<span id="versionNote"></span></span>
       <button class="quiet-btn" onclick="resetAll()">Start a new draw</button>
     </div>
 
@@ -1522,10 +1522,10 @@ const THEMES = {
   none:      { label: 'No theme' },
   halloween: { label: 'Halloween', sub: 'Calan Gaeaf Hapus!' },
   bonfire:   { label: 'Bonfire Night', sub: 'Noson Tân Gwyllt' },
-  birthday:  { label: 'Birthday', title: 'Happy Birthday!', sub: 'Pen-blwydd Hapus!' },
+  birthday:  { label: 'Birthday', title: 'Pen-blwydd Hapus!' },
   easter:    { label: 'Easter', sub: 'Pasg Hapus!' },
   christmas: { label: 'Christmas', sub: 'Nadolig Llawen!' },
-  newyear:   { label: 'New Year', title: 'Happy New Year!', sub: 'Blwyddyn Newydd Dda!' }
+  newyear:   { label: 'New Year', title: 'Blwyddyn Newydd Dda!' }
 };
 
 function easterSunday(y) {
@@ -1786,8 +1786,11 @@ function applyTheme(force) {
   setTimeOfDay();
   applyWeather();
   document.documentElement.dataset.theme = name;
-  $('titleMain').textContent = THEMES[name].title || 'Chicken Lottery';
-  $('titleSub').textContent = THEMES[name].sub || 'Loteri’r Ieir';
+  // The title is in Welsh only. A second line appears only for a seasonal greeting, never to repeat the title.
+  const sub = THEMES[name].sub || '';
+  $('titleMain').textContent = THEMES[name].title || 'Loteri’r Ieir';
+  $('titleSub').textContent = sub;
+  $('titleSub').classList.toggle('hidden', !sub);
   document.querySelectorAll('.festive-item').forEach(e => e.remove());
   $('skyfx').innerHTML = '';
   $('frontfx').innerHTML = '';
