@@ -721,7 +721,7 @@
     </details>
 
     <div class="bottom-bar">
-      <span id="versionTap">Chicken Lottery v2.12<span id="versionNote"></span></span>
+      <span id="versionTap">Chicken Lottery v2.13<span id="versionNote"></span></span>
       <button class="quiet-btn" onclick="resetAll()">Start a new draw</button>
     </div>
 
@@ -1530,7 +1530,7 @@ function renderHistory() {
 //   25-31 October   Halloween          2-8 November   Bonfire Night
 //   11 November     Birthday           Easter week    Monday before Easter to Easter Monday
 //   December        Christmas          1 January      New Year
-//   24 December     Christmas, plus Santa stopped by the police
+//   3 days in 18-24 December   Christmas, plus Santa stopped by the police
 // Only the picture at the top changes; the form works the same all year.
 // ============================================================
 const THEMES = {
@@ -1540,7 +1540,7 @@ const THEMES = {
   birthday:  { label: 'Birthday', title: 'Pen-blwydd Hapus!' },
   easter:    { label: 'Easter', sub: 'Pasg Hapus!' },
   christmas: { label: 'Christmas', sub: 'Nadolig Llawen!' },
-  christmaseve: { label: 'Christmas Eve', sub: 'Nadolig Llawen!', css: 'christmas' },
+  christmaseve: { label: 'Santa stopped', sub: 'Nadolig Llawen!', css: 'christmas' },
   newyear:   { label: 'New Year', title: 'Blwyddyn Newydd Dda!' }
 };
 
@@ -1551,11 +1551,18 @@ function easterSunday(y) {
     m = Math.floor((a + 11 * h + 22 * l) / 451);
   return new Date(y, Math.floor((h + l - 7 * m + 114) / 31) - 1, ((h + l - 7 * m + 114) % 31) + 1);
 }
+// Santa gets stopped by the police on three of the seven days before Christmas (18 to 24 December).
+// The days are never next to each other, are the same for everyone, and change from year to year.
+function santaStopDays(year) {
+  const sets = [];
+  for (let a = 18; a <= 20; a++) for (let b = a + 2; b <= 22; b++) for (let c = b + 2; c <= 24; c++) sets.push([a, b, c]);
+  return sets[(year * 7 + 3) % sets.length];
+}
 function themeForDate(d) {
   const m = d.getMonth() + 1, day = d.getDate();
   if (m === 11 && day === 11) return 'birthday';
   if (m === 1 && day === 1) return 'newyear';
-  if (m === 12 && day === 24) return 'christmaseve';
+  if (m === 12 && santaStopDays(d.getFullYear()).includes(day)) return 'christmaseve';
   if (m === 12) return 'christmas';
   if (m === 10 && day >= 25) return 'halloween';
   if (m === 11 && day >= 2 && day <= 8) return 'bonfire';
@@ -1854,7 +1861,7 @@ const BUILD = {
       dir = -dir;
       later(santaLoop, 24000 + Math.random() * 22000);
     };
-    if (!eve) later(santaLoop, 2500);   // on Christmas Eve he is otherwise engaged
+    if (!eve) later(santaLoop, 2500);   // on those days he is otherwise engaged
   },
   christmaseve() {
     BUILD.christmas(true);
